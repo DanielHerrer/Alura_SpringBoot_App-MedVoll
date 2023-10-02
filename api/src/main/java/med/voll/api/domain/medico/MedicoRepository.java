@@ -29,4 +29,6 @@ public interface MedicoRepository extends JpaRepository <Medico, Long> { // tipo
         // NOT INT() retorna medicos que NO se encuentren ocupados en esa fecha
         // rand() lo ordena aleatoriamente y me retorna el primero
     Medico seleccionarMedicoPorEspecialidadEnFecha(Especialidad especialidad, LocalDateTime fecha);
+
+    Boolean findActivoById(Long idMedico);
 }
