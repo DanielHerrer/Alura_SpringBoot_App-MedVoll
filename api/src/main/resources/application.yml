@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/vollmed_api
+    username: root
+    password: root
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  error:
+    include-stacktrace: never
+
+api:
+  security:
+    secret: ${JWT_SECRET:123456}
+#    Se puede setear un secret en el servidor { set JWT_SECRET=123456 }
+#     $JWT_SECRET. Esta variable de entorno puede ser configurada en el sistema operativo o
+#       en la plataforma de despliegue, y no será visible en el código fuente. Si la variable de entorno
+#           no está configurada, entonces se utilizará el valor por defecto 123456.

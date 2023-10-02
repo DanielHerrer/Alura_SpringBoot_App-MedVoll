@@ -1,0 +1,4 @@
+ALTER TABLE medicos
+CHANGE distrito estado VARCHAR(100) NOT NULL;
+ALTER TABLE medicos
+ADD postal VARCHAR(15) NOT NULL;
