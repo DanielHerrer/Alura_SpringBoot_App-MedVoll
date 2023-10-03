@@ -1,5 +1,7 @@
 package med.voll.api.domain.consulta;
 
+import med.voll.api.domain.consulta.validaciones.ValidadorCancelamientoDeConsulta;
+import med.voll.api.domain.consulta.validaciones.ValidadorHorarioAntecedencia;
 import med.voll.api.domain.consulta.validaciones.ValidadorDeConsultas;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
@@ -22,15 +24,18 @@ public class AgendaDeConsultaService {
     private MedicoRepository medicoRepository;
 
     @Autowired // Me trae todos los validadores que implementen la interfaz ValidadorDeConsultas
-    List<ValidadorDeConsultas> validadores;
+    private List<ValidadorDeConsultas> validadores;
 
-    public void agendar (DatosAgendarConsulta dto) {
+    @Autowired
+    private List<ValidadorCancelamientoDeConsulta> validadoresCancelamiento;
 
-        if (pacienteRepository.findById(dto.idPaciente()).isPresent()) {
+    public DatosDetalleConsulta agendar (DatosAgendarConsulta dto) {
+
+        if (!pacienteRepository.findById(dto.idPaciente()).isPresent()) {
             throw new ValidacionDeIntegridad("El ID del Paciente no fue encontrado..");
         }
 
-        if(dto.idMedico() != null && medicoRepository.existsById(dto.idMedico())) {
+        if(dto.idMedico() != null && !medicoRepository.existsById(dto.idMedico())) {
             throw new ValidacionDeIntegridad("El ID del Medico no fue encontrado..");
         }
 
@@ -40,13 +45,28 @@ public class AgendaDeConsultaService {
 
         Medico medico = seleccionarMedico(dto);
 
-        Consulta consulta = new Consulta(null, medico, paciente, dto.fecha());
+        if (medico == null) {
+            throw new ValidacionDeIntegridad("No existen medicos disponibles para este horario y especialidad.");
+        }
+
+        Consulta consulta = new Consulta(medico, paciente, dto.fecha());
 
         consultaRepository.save(consulta);
 
+        return new DatosDetalleConsulta(consulta);
     }
 
-    private Medico seleccionarMedico(DatosAgendarConsulta dto) {
+    public void cancelar (DatosCancelamientoConsulta dto) {
+        if(!consultaRepository.existsById(dto.idConsulta())) {
+            throw new ValidacionDeIntegridad("El ID de la Consulta ingresada no existe..");
+        }
+        validadoresCancelamiento.forEach(v -> v.validar(dto));
+
+        var consulta = consultaRepository.getReferenceById(dto.idConsulta());
+        consulta.cancelar(dto.motivo());
+    }
+
+    private Medico seleccionarMedico (DatosAgendarConsulta dto) {
         if (dto.idMedico() != null) {
             return medicoRepository.getReferenceById(dto.idMedico());
         }

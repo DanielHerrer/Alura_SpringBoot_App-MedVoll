@@ -1,5 +1,7 @@
 package med.voll.api.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import med.voll.api.domain.direccion.DatosDireccion;
@@ -16,6 +18,8 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/pacientes")
+//@Api(value = "PacienteController", description = "Controlador para operaciones CRUD de pacientes")
+@SecurityRequirement(name = "bearer-key")
 public class PacienteController {
 
     /**
@@ -38,7 +42,10 @@ public class PacienteController {
      * - [Class] Direccion direccion;
      */
     @PostMapping
-    // Registra un paciente en la base de datos.
+    @Operation(
+            summary = "Registra un paciente en la base de datos.",
+            description = "",
+            tags = { "paciente", "post" })
     public ResponseEntity<DatosRespuestaPaciente> registrarPaciente(@RequestBody
                                                                     @Valid DatosRegistroPaciente dtoRegistroPaciente,
                                                                     UriComponentsBuilder uriComponentsBuilder) {
@@ -68,14 +75,20 @@ public class PacienteController {
      * - Paginado, maximo 10 registros por pagina
      */
     @GetMapping
-    // Obtiene una lista paginada de pacientes.
+    @Operation(
+            summary = "Obtiene una lista paginada de pacientes activos.",
+            description = "",
+            tags = { "paciente", "get" })
     public ResponseEntity<Page<DatosListadoPaciente>> listadoPacientes(@PageableDefault(size = 10, sort = "nombre") Pageable paginacion) {
         // Retorna una lista paginada de médicos ACTIVOS mapeados a objetos DatosListadoPaciente.
         return ResponseEntity.ok(pacienteRepository.findAll(paginacion).map(DatosListadoPaciente::new));
     }
 
     @GetMapping("/{id}")
-    // Obtiene los detalles de un paciente por su ID.
+    @Operation(
+            summary = "Obtiene los detalles de un paciente por su ID.",
+            description = "",
+            tags = { "paciente", "get" })
     public ResponseEntity<DatosRespuestaPaciente> retornaDatosPaciente(@PathVariable Long id) {
         // Obtiene el paciente por su ID.
         Paciente paciente = pacienteRepository.getReferenceById(id);
@@ -100,7 +113,10 @@ public class PacienteController {
      */
     @PutMapping
     @Transactional
-    // Actualiza los datos de un paciente por su ID.
+    @Operation(
+            summary = "Actualiza un paciente.",
+            description = "",
+            tags = { "paciente", "put" })
     public ResponseEntity<DatosRespuestaPaciente> actualizarPaciente(@RequestBody
                                                                  @Valid DatosActualizarPaciente dtoActualizarPaciente) {
         // Obtiene el paciente por su ID.
@@ -122,7 +138,10 @@ public class PacienteController {
      */
     @DeleteMapping("/{id}")
     @Transactional
-    // Elimina lógicamente un paciente por su ID.
+    @Operation(
+            summary = "Elimina lógicamente un paciente por su ID.",
+            description = "",
+            tags = { "paciente", "delete" })
     public ResponseEntity eliminarPaciente(@PathVariable Long id) {
         // Obtiene el paciente por su ID.
         Paciente paciente = pacienteRepository.getReferenceById(id);

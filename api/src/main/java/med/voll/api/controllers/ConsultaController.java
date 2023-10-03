@@ -1,24 +1,24 @@
 package med.voll.api.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
-import med.voll.api.domain.consulta.AgendaDeConsultaService;
-import med.voll.api.domain.consulta.DatosAgendarConsulta;
+import med.voll.api.domain.consulta.*;
 
 import jakarta.validation.Valid;
-import med.voll.api.domain.consulta.DatosDetalleConsulta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/consultas")
+@SecurityRequirement(name = "bearer-key")
 public class ConsultaController {
 
     @Autowired
     private AgendaDeConsultaService service;
+    @Autowired
+    private ConsultaRepository repository;
 
     /**
      * POST
@@ -40,11 +40,32 @@ public class ConsultaController {
      */
     @PostMapping
     @Transactional
+    @Operation(
+            summary = "Registra una Consulta en la base de datos.",
+            description = "",
+            tags = { "consulta", "post" })
     public ResponseEntity agendar(@RequestBody @Valid DatosAgendarConsulta dto) {
 
-        service.agendar(dto);
+        var response = service.agendar(dto);
 
-        return ResponseEntity.ok(new DatosDetalleConsulta(null,null,null,null));
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * DELETE
+     * - Cancelar Consulta
+     */
+    @DeleteMapping("/{id}")
+    @Transactional
+    @Operation(
+            summary = "Elimina lógicamente una Consulta por su ID.",
+            description = "",
+            tags = { "consulta", "delete" })
+    public ResponseEntity cancelar(@PathVariable Long id, @RequestBody DatosCancelamientoConsulta dto) {
+        Consulta consulta = repository.getReferenceById(id);
+        service.cancelar(dto);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
